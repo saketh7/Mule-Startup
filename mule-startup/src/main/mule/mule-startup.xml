@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="c259554a-2bec-4096-a3bf-e136f571f3dd" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="mule-startupFlow" doc:id="dba6e8e9-825c-4724-bef9-c7247af0440b" >
+		<http:listener doc:name="Listener" doc:id="cc904c15-a699-4dc5-b545-d8b8ab9bca5d" config-ref="HTTP_Listener_config" path="/employeeDetails"/>
+		<set-variable value="mysql" doc:name="dbName" doc:id="0fd8b254-a653-407f-af58-19d6a3b806e9" variableName="dbName"/>
+		<flow-ref doc:name="Flow Reference" doc:id="670094f8-903a-4a24-9bdd-cb8b675c09a8" name="getMessage"/>
+		<set-variable value="oracle" doc:name="dbNameOverride" doc:id="7966573e-5549-405b-bea6-345ea989b02d" variableName="dbName"/>
+		<set-payload value='#["Hello " ++ attributes.queryParams.name ++ ", Your Employee ID is " ++ attributes.queryParams.id ++ " . You are a "++ attributes.queryParams.role ++ " and working for " ++ attributes.queryParams.company]' doc:name="Set Payload" doc:id="dc220cb2-870b-4613-ab86-1d98e037fc91" />
+		<ee:transform doc:name="Transform Message" doc:id="e6ee573f-a25b-406c-81ca-d2056cdf0da4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+var test="pay"
+output application/json
+---
+payload ++ test]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<sub-flow name="getMessage" doc:id="ce5af864-a311-4284-a02c-fecf73dcb0d5" >
+		<set-payload value='#["Hello " ++ vars.dbName as String]' doc:name="formatMessage" doc:id="30456756-632b-4423-8b79-a4943f512a01" />
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="adc926cd-0ffc-41b3-8227-01f33a29911d" />
+		<logger level="INFO" doc:name="Logger" doc:id="b9323d49-9023-44f5-a041-a5a4fe3f893b" message="log me as String"/>
+	</sub-flow>
+</mule>
